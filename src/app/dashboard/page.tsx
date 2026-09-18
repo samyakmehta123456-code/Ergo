@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { SectionColumns } from "@/components/SectionColumns";
 import { RightCalendarPanel } from "@/components/RightCalendarPanel";
+import { CalendarWidget } from "@/components/CalendarWidget";
 import { TaskModal } from "@/components/TaskModal";
 import { InstallPwaBanner } from "@/components/InstallPwaBanner";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [customProjects, setCustomProjects] = useState<string[]>([]);
+  const [isHeaderCalendarOpen, setIsHeaderCalendarOpen] = useState<boolean>(false);
 
   // Task Modal
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -293,11 +295,8 @@ export default function DashboardPage() {
           tasks={tasks}
           user={user}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          selectedCalendarDate={selectedCalendarDate}
-          onSelectDate={(d) => {
-            setSelectedCalendarDate(d);
-            if (activeListId !== "today") setActiveListId("today");
-          }}
+          onToggleCalendar={() => setIsHeaderCalendarOpen(!isHeaderCalendarOpen)}
+          isCalendarOpen={isHeaderCalendarOpen}
         />
 
         {/* Main Workspace Body & Calendar Grid */}
@@ -305,6 +304,21 @@ export default function DashboardPage() {
 
           {/* Main Section Area */}
           <div className="lg:col-span-8 space-y-4 sm:space-y-6">
+            
+            {/* Inline Calendar View when Calendar Header Button is toggled */}
+            {isHeaderCalendarOpen && (
+              <div className="animate-in fade-in slide-in-from-top-3 duration-200">
+                <CalendarWidget
+                  tasks={tasks}
+                  selectedDate={selectedCalendarDate}
+                  onSelectDate={(d) => {
+                    setSelectedCalendarDate(d);
+                    if (activeListId !== "today") setActiveListId("today");
+                  }}
+                />
+              </div>
+            )}
+
             <SectionColumns
               title={listTitle}
               tasks={filteredTasks}
@@ -336,26 +350,25 @@ export default function DashboardPage() {
 
         </main>
 
-        {/* Floating Mobile Bottom Navigation Bar */}
+        {/* Floating Mobile Bottom Navigation Bar without emojis except + New */}
         <div className="md:hidden fixed bottom-4 left-3 right-3 z-40 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-[0_12px_30px_rgba(0,0,0,0.15)] flex items-center justify-between p-1.5 space-x-1 select-none">
           {[
-            { id: "today", label: "Today", icon: "📅" },
-            { id: "scheduled", label: "Weekly", icon: "🗓" },
-            { id: "all", label: "All", icon: "☰" },
-            { id: "flagged", label: "Flagged", icon: "🚩" },
-            { id: "completed", label: "Done", icon: "✓" },
+            { id: "today", label: "Today" },
+            { id: "scheduled", label: "Weekly" },
+            { id: "all", label: "All" },
+            { id: "flagged", label: "Flagged" },
+            { id: "completed", label: "Done" },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveListId(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-all duration-200 text-xs font-bold gap-0.5 ${
+              className={`flex-1 py-2 px-1 rounded-xl transition-all duration-200 text-xs font-bold text-center ${
                 activeListId === item.id
                   ? "bg-[#3559E0] text-white shadow-md shadow-[#3559E0]/30 scale-105"
-                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
               }`}
             >
-              <span className="text-sm leading-none">{item.icon}</span>
-              <span className="text-[10px] leading-tight">{item.label}</span>
+              <span>{item.label}</span>
             </button>
           ))}
           <button
@@ -363,10 +376,10 @@ export default function DashboardPage() {
               setEditingTask(null);
               setIsTaskModalOpen(true);
             }}
-            className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-all duration-200 text-xs font-bold gap-0.5 text-white bg-[#3559E0] hover:bg-[#2c4ac0] shadow-md shadow-[#3559E0]/30"
+            className="flex-1 py-2 px-1 rounded-xl transition-all duration-200 text-xs font-bold text-center text-white bg-[#3559E0] hover:bg-[#2c4ac0] shadow-md shadow-[#3559E0]/30 flex items-center justify-center space-x-1"
           >
-            <span className="text-sm leading-none">+</span>
-            <span className="text-[10px] leading-tight">New</span>
+            <span className="text-sm font-black">+</span>
+            <span>New</span>
           </button>
         </div>
       </div>
@@ -384,5 +397,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-

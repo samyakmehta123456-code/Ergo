@@ -49,17 +49,13 @@ export function CalendarWidget({ tasks, selectedDate, onSelectDate }: CalendarWi
   );
 
   return (
-    <div className="bg-[#3559E0] text-white rounded-3xl p-6 shadow-[0_15px_35px_rgba(53,89,224,0.3)] border border-white/20 relative overflow-hidden space-y-4 select-none">
-      {/* Background wave depth pattern image matching progress card */}
-      <div className="absolute inset-0 bg-[url('/bg-pattern.png')] bg-cover bg-center opacity-25 mix-blend-overlay pointer-events-none" />
-      {/* Background ambient lighting element */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-white/15 rounded-full blur-2xl pointer-events-none -mr-12 -mt-12" />
-
+    <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_15px_35px_rgba(0,0,0,0.06),0_5px_15px_rgba(53,89,224,0.08)] border border-slate-200/90 relative overflow-hidden space-y-4 select-none">
+      
       {/* Calendar Header: Month, Navigation, Today Button */}
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center space-x-2">
-          <CalendarIcon className="w-4 h-4 text-white" />
-          <h2 className="text-base font-extrabold text-white tracking-tight">
+          <CalendarIcon className="w-4 h-4 text-[#3559E0]" />
+          <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
             {format(currentMonth, "MMMM yyyy")}
           </h2>
         </div>
@@ -67,20 +63,20 @@ export function CalendarWidget({ tasks, selectedDate, onSelectDate }: CalendarWi
         <div className="flex items-center space-x-1">
           <button
             onClick={goToToday}
-            className="px-2.5 py-1 text-xs font-bold text-white bg-white/20 hover:bg-white/30 rounded-lg transition border border-white/30 mr-1 shadow-2xs"
+            className="px-2.5 py-1 text-xs font-bold text-[#3559E0] bg-[#3559E0]/10 hover:bg-[#3559E0]/20 rounded-lg transition border border-[#3559E0]/20 mr-1"
           >
             Today
           </button>
           <button
             onClick={prevMonth}
-            className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition"
+            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
             aria-label="Previous Month"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={nextMonth}
-            className="p-1.5 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition"
+            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
             aria-label="Next Month"
           >
             <ChevronRight className="w-4 h-4" />
@@ -89,7 +85,7 @@ export function CalendarWidget({ tasks, selectedDate, onSelectDate }: CalendarWi
       </div>
 
       {/* Weekday Labels Header */}
-      <div className="grid grid-cols-7 text-center text-[11px] font-bold text-white/80 uppercase tracking-wider relative z-10">
+      <div className="grid grid-cols-7 text-center text-[11px] font-extrabold text-slate-400 uppercase tracking-wider relative z-10">
         <span>Sun</span>
         <span>Mon</span>
         <span>Tue</span>
@@ -112,25 +108,23 @@ export function CalendarWidget({ tasks, selectedDate, onSelectDate }: CalendarWi
             <button
               key={idx}
               onClick={() => onSelectDate(day)}
-              className={`h-10 rounded-xl flex flex-col items-center justify-center relative transition text-xs font-bold ${
+              className={`h-9 sm:h-10 rounded-xl flex flex-col items-center justify-center relative transition text-xs font-bold ${
                 isSelected
-                  ? "bg-white text-slate-900 shadow-md shadow-black/20 scale-105 z-10"
+                  ? "bg-[#3559E0] text-white shadow-lg shadow-[#3559E0]/35 scale-105 z-10 font-black"
                   : isDayToday
-                  ? "bg-[#6A99D4] text-white shadow-xs border border-white/40"
+                  ? "bg-[#3559E0]/15 text-[#3559E0] border border-[#3559E0]/30 font-extrabold"
                   : !isCurrentMonthDay
-                  ? "text-white/40 hover:bg-white/10"
-                  : "text-white hover:bg-white/20"
+                  ? "text-slate-300 hover:bg-slate-50"
+                  : "text-slate-700 hover:bg-slate-100"
               }`}
             >
-              <span className={isSelected ? "text-slate-900 font-black text-xs" : ""}>
-                {format(day, "d")}
-              </span>
+              <span>{format(day, "d")}</span>
 
               {/* Task Indicator Dot */}
               {hasTask && (
                 <span
                   className={`w-1.5 h-1.5 rounded-full absolute bottom-1 ${
-                    isSelected ? "bg-[#E84E4E]" : "bg-[#F4C447]"
+                    isSelected ? "bg-white" : "bg-[#E84E4E]"
                   }`}
                 />
               )}
@@ -140,12 +134,12 @@ export function CalendarWidget({ tasks, selectedDate, onSelectDate }: CalendarWi
       </div>
 
       {/* Legend Footnote */}
-      <div className="pt-2 border-t border-white/20 flex items-center justify-between text-[11px] text-white/80 relative z-10">
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 relative z-10">
         <span className="flex items-center space-x-1.5">
           <span className="w-2 h-2 rounded-full bg-[#E84E4E]" />
           <span>Scheduled tasks date</span>
         </span>
-        <span className="font-semibold text-white">
+        <span className="font-bold text-slate-800">
           Selected: {format(selectedDate, "MMM d, yyyy")}
         </span>
       </div>

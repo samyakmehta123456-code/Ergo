@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Search, Plus, Download, PanelLeft, X, Calendar } from "lucide-react";
 import Link from "next/link";
 import { exportTasksToCSV } from "@/lib/utils";
-import { CalendarWidget } from "@/components/CalendarWidget";
 
 interface HeaderProps {
   searchQuery: string;
@@ -14,8 +13,8 @@ interface HeaderProps {
   user: { name: string; email: string } | null;
   onToggleSidebar: () => void;
   onDemoLogin?: () => void;
-  selectedCalendarDate?: Date;
-  onSelectDate?: (d: Date) => void;
+  onToggleCalendar?: () => void;
+  isCalendarOpen?: boolean;
 }
 
 export function Header({
@@ -26,11 +25,10 @@ export function Header({
   user,
   onToggleSidebar,
   onDemoLogin,
-  selectedCalendarDate = new Date(),
-  onSelectDate,
+  onToggleCalendar,
+  isCalendarOpen,
 }: HeaderProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
 
   return (
     <header className="h-14 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 select-none">
@@ -63,13 +61,17 @@ export function Header({
           <Download className="w-4 h-4" />
         </button>
 
-        {/* Calendar Button right beside Download Icon */}
+        {/* Calendar Toggle Button right beside Download Icon */}
         <button
-          onClick={() => setIsCalendarModalOpen(true)}
-          title="Open Calendar"
-          className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs transition border border-slate-200 flex items-center justify-center"
+          onClick={onToggleCalendar}
+          title="Toggle Calendar View"
+          className={`p-1.5 rounded-xl text-xs transition border flex items-center justify-center ${
+            isCalendarOpen
+              ? "bg-[#3559E0] text-white border-[#3559E0] shadow-sm"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"
+          }`}
         >
-          <Calendar className="w-4 h-4 text-[#3559E0]" />
+          <Calendar className="w-4 h-4" />
         </button>
       </div>
 
@@ -147,35 +149,6 @@ export function Header({
           )
         )}
       </div>
-
-      {/* Calendar Modal Popup when Header Calendar Icon is clicked */}
-      {isCalendarModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200 select-none">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-4 shadow-2xl relative border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-[#3559E0]" />
-                Select Date & View Tasks
-              </h3>
-              <button
-                onClick={() => setIsCalendarModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <CalendarWidget
-              tasks={tasks}
-              selectedDate={selectedCalendarDate}
-              onSelectDate={(d) => {
-                if (onSelectDate) onSelectDate(d);
-                setIsCalendarModalOpen(false);
-              }}
-            />
-          </div>
-        </div>
-      )}
 
     </header>
   );
