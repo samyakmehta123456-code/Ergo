@@ -261,22 +261,24 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
-      
-      {/* Apple Reminders macOS Sidebar */}
-      <Sidebar
-        activeListId={activeListId}
-        setActiveListId={setActiveListId}
-        tasks={tasks}
-        user={user}
-        onLogout={handleLogout}
-        isCollapsed={isSidebarCollapsed}
-        customProjects={customProjects}
-        onAddProject={handleAddProject}
-      />
+
+      {/* Sidebar — hidden on mobile, visible on md+ */}
+      <div className="hidden md:block">
+        <Sidebar
+          activeListId={activeListId}
+          setActiveListId={setActiveListId}
+          tasks={tasks}
+          user={user}
+          onLogout={handleLogout}
+          isCollapsed={isSidebarCollapsed}
+          customProjects={customProjects}
+          onAddProject={handleAddProject}
+        />
+      </div>
 
       {/* Main Content Workspace */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+
         {/* PWA Install Notification */}
         <InstallPwaBanner />
 
@@ -294,10 +296,10 @@ export default function DashboardPage() {
         />
 
         {/* Main Workspace Body & Calendar Grid */}
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+        <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start pb-24 md:pb-6">
+
           {/* Main Section Area */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-4 sm:space-y-6">
             <SectionColumns
               title={listTitle}
               tasks={filteredTasks}
@@ -315,8 +317,8 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Right Panel Interactive Monthly Calendar Widget */}
-          <div className="lg:col-span-4 space-y-4">
+          {/* Right Panel Calendar — hidden on mobile */}
+          <div className="hidden lg:block lg:col-span-4 space-y-4">
             <RightCalendarPanel
               tasks={tasks}
               selectedDate={selectedCalendarDate}
@@ -328,6 +330,40 @@ export default function DashboardPage() {
           </div>
 
         </main>
+
+        {/* Mobile Bottom Navigation Bar */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex items-center justify-around px-2 py-2 shadow-lg">
+          {[
+            { id: "today", label: "Today", icon: "📅" },
+            { id: "scheduled", label: "Weekly", icon: "🗓" },
+            { id: "all", label: "All", icon: "☰" },
+            { id: "flagged", label: "Flagged", icon: "🚩" },
+            { id: "completed", label: "Done", icon: "✓" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveListId(item.id)}
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition text-xs font-semibold gap-0.5 ${
+                activeListId === item.id
+                  ? "text-[#3559E0]"
+                  : "text-slate-400"
+              }`}
+            >
+              <span className="text-base leading-none">{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              setEditingTask(null);
+              setIsTaskModalOpen(true);
+            }}
+            className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition text-xs font-bold gap-0.5 text-white bg-[#3559E0]"
+          >
+            <span className="text-base leading-none">+</span>
+            <span>New</span>
+          </button>
+        </div>
       </div>
 
       {/* Task Modal */}
@@ -343,4 +379,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
