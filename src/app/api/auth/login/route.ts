@@ -199,117 +199,78 @@ export async function POST(req: Request) {
 
     const { email, password } = parsed.data;
 
+    let supabaseAuthSuccess = false;
     // Real Supabase Auth Login
     try {
-      const { error: supabaseError } = await supabaseSignIn(email, password);
-      if (supabaseError) {
+      const { data: supaData, error: supabaseError } = await supabaseSignIn(email, password);
+      if (!supabaseError && supaData?.user) {
+        supabaseAuthSuccess = true;
+      } else if (supabaseError) {
         console.warn("Supabase Auth notice:", supabaseError.message);
       }
     } catch (e) {
       console.warn("Supabase Auth unreachable or placeholder:", e);
     }
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+
+    let user = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+    } catch (e) {
+      console.warn("Prisma user lookup notice:", e);
+    }
+
+    if (!user && !supabaseAuthSuccess) {
+      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    }
+
+    if (user) {
+      const isPasswordValid = await comparePassword(password, user.password);
+      if (!isPasswordValid && !supabaseAuthSuccess) {
+        return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+      }
+    } else if (supabaseAuthSuccess) {
+      // Create user record in fallback memory/database if Supabase auth passed
+      const hashedPassword = await hashPassword(password);
+      try {
+        user = await prisma.user.create({
+          data: {
+            name: email.split("@")[0],
+            email: email.toLowerCase(),
+            password: hashedPassword,
+          },
+        });
+      } catch (e) {
+        user = { id: `supa_${Date.now()}`, name: email.split("@")[0], email: email.toLowerCase() };
+      }
+    }
 
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
-    const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
-    }
-
     // Seed default tasks for new registered users if they have 0 tasks
-    const taskCount = await prisma.task.count({ where: { userId: user.id } });
-    if (taskCount === 0) {
-      const now = new Date();
-      await prisma.task.createMany({
-        data: [
-          {
-            userId: user.id,
-            title: "Pack Camping Tent & Gear",
-            description: "Check tent, sleeping bag, and flashlight.",
-            status: "PENDING",
-            priority: "HIGH",
-            category: "Camping Trip",
-            dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Buy Dog Kibble & Treats",
-            description: "Get 10kg dog food.",
-            status: "PENDING",
-            priority: "URGENT",
-            category: "Pet Shopping",
-            dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Water Garden Plants",
-            description: "Water tomato plants and flowers.",
-            status: "PENDING",
-            priority: "MEDIUM",
-            category: "Gardening",
-            dueDate: now,
-          },
-          {
-            userId: user.id,
-            title: "Pick Up Dry Cleaning",
-            description: "Get suits from cleaner.",
-            status: "PENDING",
-            priority: "HIGH",
-            category: "Errands",
-            dueDate: now,
-          },
-          {
-            userId: user.id,
-            title: "Data Structures C++ Assignment",
-            description: "Implement Binary Search Trees.",
-            status: "PENDING",
-            priority: "URGENT",
-            category: "Computer Science",
-            dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Linear Algebra Matrix Revision",
-            description: "Review Eigenvalues and Vector Spaces.",
-            status: "PENDING",
-            priority: "HIGH",
-            category: "Mathematics",
-            dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Physics Lab Experiment Report",
-            description: "Complete error analysis.",
-            status: "COMPLETED",
-            priority: "MEDIUM",
-            category: "Physics Lab",
-            dueDate: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Semester Project Presentation Slides",
-            description: "Draft architecture diagrams.",
-            status: "COMPLETED",
-            priority: "URGENT",
-            category: "Projects",
-            dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
-          },
-          {
-            userId: user.id,
-            title: "Read 25 Pages of Book",
-            description: "Evening reading.",
-            status: "PENDING",
-            priority: "LOW",
-            category: "Personal",
-            dueDate: now,
-          }
-        ]
-      });
+    try {
+      const taskCount = await prisma.task.count({ where: { userId: user.id } });
+      if (taskCount === 0) {
+        const now = new Date();
+        await prisma.task.createMany({
+          data: [
+            {
+              userId: user.id,
+              title: "Finalize Project Presentation Slides",
+              description: "Complete architecture diagrams.",
+              status: "PENDING",
+              priority: "URGENT",
+              category: "General Project",
+              dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+            },
+          ]
+        });
+      }
+    } catch (e) {
+      console.warn("Task seed notice:", e);
     }
 
     const token = await signJWT({
@@ -332,8 +293,8 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to log in" }, { status: 500 });
   }
 }
