@@ -12,60 +12,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search") || "";
-    const status = searchParams.get("status") || "ALL";
-    const priority = searchParams.get("priority") || "ALL";
-    const category = searchParams.get("category") || "ALL";
-    const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder = searchParams.get("sortOrder") || "desc";
-
-    const where: any = {
-      userId: user.userId,
-    };
-
-    if (search.trim()) {
-      where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } },
-      ];
+    let dbUser = null;
+    try {
+      dbUser = await prisma.user.findFirst({
+        where: { OR: [{ id: user.userId }, { email: user.email.toLowerCase() }] },
+      });
+    } catch (e) {
+      console.warn("DB user find notice:", e);
     }
 
-    if (status !== "ALL") {
-      if (status === "OVERDUE") {
-        where.status = { not: "COMPLETED" };
-        where.dueDate = { lt: new Date() };
-      } else {
-        where.status = status;
-      }
-    }
-
-    if (priority !== "ALL") {
-      where.priority = priority;
-    }
-
-    if (category !== "ALL") {
-      where.category = category;
-    }
-
-    let orderBy: any = {};
-    if (sortBy === "dueDate") {
-      orderBy = { dueDate: sortOrder };
-    } else if (sortBy === "priority") {
-      orderBy = { priority: sortOrder };
-    } else {
-      orderBy = { createdAt: sortOrder };
-    }
+    const targetUserId = dbUser ? dbUser.id : user.userId;
 
     const tasks = await prisma.task.findMany({
-      where,
-      orderBy,
+      where: { userId: targetUserId },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json({ tasks });
-  } catch (error) {
+  } catch (error: any) {
     console.error("GET /api/tasks Error:", error);
-    return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to fetch tasks" }, { status: 500 });
   }
 }
 
@@ -85,6 +51,28 @@ export async function POST(req: Request) {
 
     const { title, description, status, priority, category, dueDate } = parsed.data;
 
+    // Ensure User row exists in database to satisfy foreign key constraint
+    let dbUser = await prisma.user.findFirst({
+      where: { OR: [{ id: user.userId }, { email: user.email.toLowerCase() }] },
+    });
+
+    if (!dbUser) {
+      try {
+        dbUser = await prisma.user.create({
+          data: {
+            id: user.userId,
+            name: user.name || user.email.split("@")[0],
+            email: user.email.toLowerCase(),
+            password: "default_hashed_pass",
+          },
+        });
+      } catch (e) {
+        dbUser = await prisma.user.findFirst({ where: { email: user.email.toLowerCase() } });
+      }
+    }
+
+    const targetUserId = dbUser ? dbUser.id : user.userId;
+
     const task = await prisma.task.create({
       data: {
         title,
@@ -93,13 +81,13 @@ export async function POST(req: Request) {
         priority,
         category,
         dueDate: dueDate ? new Date(dueDate) : null,
-        userId: user.userId,
+        userId: targetUserId,
       },
     });
 
     return NextResponse.json({ task }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/tasks Error:", error);
-    return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to create task" }, { status: 500 });
   }
 }

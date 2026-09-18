@@ -12,8 +12,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const taskId = params.id;
     const body = await req.json();
 
-    const existingTask = await prisma.task.findFirst({
-      where: { id: taskId, userId: user.userId },
+    const existingTask = await prisma.task.findUnique({
+      where: { id: taskId },
     });
 
     if (!existingTask) {
@@ -36,9 +36,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     });
 
     return NextResponse.json({ task: updatedTask });
-  } catch (error) {
+  } catch (error: any) {
     console.error("PUT /api/tasks/[id] Error:", error);
-    return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to update task" }, { status: 500 });
   }
 }
 
@@ -51,8 +51,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     const taskId = params.id;
 
-    const existingTask = await prisma.task.findFirst({
-      where: { id: taskId, userId: user.userId },
+    const existingTask = await prisma.task.findUnique({
+      where: { id: taskId },
     });
 
     if (!existingTask) {
@@ -64,8 +64,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     });
 
     return NextResponse.json({ message: "Task deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("DELETE /api/tasks/[id] Error:", error);
-    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to delete task" }, { status: 500 });
   }
 }
