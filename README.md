@@ -4,9 +4,9 @@ Ergo is a modern, full-stack student task and project management application bui
 
 ---
 
-## Submission Links
+## Application Links
 
-- **Live Deployment (Vercel)**: [https://lunorsoft-taskflow.vercel.app](https://lunorsoft-taskflow.vercel.app)
+- **Live Deployment**: [https://lunorsoft-taskflow.vercel.app](https://lunorsoft-taskflow.vercel.app)
 - **GitHub Repository**: [https://github.com/samyakmehta123456-code/Ergo](https://github.com/samyakmehta123456-code/Ergo)
 
 ---
@@ -23,37 +23,26 @@ Ergo is a modern, full-stack student task and project management application bui
 
 ---
 
-## Key Features
+## Application Functionality
 
-### Core Functionality
-- [x] **Create Tasks**: Add tasks with title, description, priority, category, and due date.
-- [x] **Edit Tasks**: Update existing task details dynamically through interactive modals.
-- [x] **Delete Tasks**: Remove tasks safely with instant database cascade updates.
-- [x] **Mark Completed/Pending**: Single-click status toggling with optimistic UI updates.
-- [x] **View Pending & Completed Tasks**: Dedicated tabs and status indicators.
-- [x] **Filter & Organize**: Categorize by academic subjects (CS, Math, Physics, Lab Work) or personal projects.
-- [x] **Database Persistence**: Fully backed by Supabase PostgreSQL in production via Prisma ORM.
-- [x] **Clean & Responsive UI**: Responsive sidebar, mobile bottom navigation, and card grids.
-
-### Advanced Features
-- [x] **User Authentication**: Secure user registration, login, and session persistence.
-- [x] **Live Global Search**: Instant keyword search across task titles, descriptions, and categories.
-- [x] **Task Priority & Due Dates**: Priority levels (Low, Medium, High, Urgent) and calendar date picking.
-- [x] **Dashboard Analytics & Progress Hero**: Visual progress bar and task completion stats.
-- [x] **Interactive Calendar Widget**: Monthly view showcasing scheduled task indicators per day.
-- [x] **Data Export**: One-click CSV export of task records for backup.
-- [x] **Live Production Deployment**: Hosted on Vercel with connected Supabase cloud database.
+- **Task Management**: Full CRUD operations to create, edit, delete, and manage task lifecycle states (Pending, In Progress, Completed).
+- **Subject & Project Categorization**: Group tasks by academic subjects (Computer Science, Mathematics, Physics, Lab Work) or custom project folders.
+- **Priority & Due Date Tracking**: Assign priority levels (Low, Medium, High, Urgent) and set specific deadline target dates.
+- **Interactive Calendar View**: Monthly calendar widget with interactive date selection to inspect scheduled items for any selected day.
+- **Real-time Search & Filtering**: Global search across all tasks alongside smart category filters (Today, Weekly, Monthly, Flagged, Completed).
+- **User Authentication**: User registration, login, and stateless JWT session management backed by HTTP-Only cookies.
+- **Analytics & Progress Metrics**: Dashboard analytics with completion rate progress bar and category breakdown.
+- **Data Export**: CSV data export capability for task records and offline backups.
 
 ---
 
 ## Architecture & Implementation Overview
 
-- **Supabase Cloud Database Setup**: Configured Supabase PostgreSQL database project instance, established direct and pooled connection strings, and configured environment variables (`DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
-- **Prisma Relational Database Architecture**: Designed relational schemas (`User` and `Task` models), configured database indexes, defined field constraints (`onDelete: Cascade`), and executed migrations (`npx prisma db push`).
-- **Vercel Deployment & Configuration**: Connected GitHub repository to **Vercel**, configured build scripts (`prisma generate && next build`), injected secure production environment variables, verified domain resolution, and tested live production endpoints.
-- **Custom Authentication & Cookie Security**: Engineered session management using `jose` JWTs in HTTP-Only, `SameSite=Lax` cookies, integrated middleware route protection, and bridged Supabase Auth state.
-- **Optimistic State Management & Logic**: Wrote state synchronization logic in React components to ensure instant UI feedback during task creation, deletion, and completion toggles.
-- **Testing & Quality Assurance**: Verified all application links, authentication flows, and data persistence in incognito browser sessions prior to final submission.
+- **Cloud Database Configuration**: Configured Supabase PostgreSQL database project instance with direct and pooled connection strings (`DATABASE_URL`).
+- **Prisma Relational Schema**: Designed relational schemas (`User` and `Task` models), database indexes, and relational cascade constraints (`onDelete: Cascade`).
+- **Production Deployment**: Integrated repository with **Vercel** CI/CD pipeline, environment variable injection, and dynamic build scripts.
+- **Authentication Security**: Implemented JWT cookie security (`SameSite=Lax`, `HttpOnly`), middleware route guards, and authenticated session handlers.
+- **Optimistic State Updates**: Implemented optimistic React state updates for UI interactions (status toggle, flag toggle, task deletion) with automatic rollback on network failure.
 
 ---
 
@@ -125,6 +114,6 @@ To deploy to Vercel:
 
 ## Key Technical Decisions
 
-- **Why HTTP-Only Cookies for Auth?**: Prevents XSS attacks by withholding token access from client-side JavaScript, ensuring tokens are automatically passed securely via HTTP headers.
-- **Why Prisma + Supabase?**: Combines the type-safety and auto-generated migrations of Prisma ORM with the scalability and PostgreSQL hosting of Supabase.
-- **Optimistic UI Updates**: Instant state updates on user action, rolled back automatically with toast notifications if the API request fails.
+- **HTTP-Only Cookie Authentication**: Prevents client-side script access to session tokens, protecting against XSS vulnerabilities.
+- **Prisma ORM with PostgreSQL**: Provides strong type safety, dynamic query building, and database schema migrations.
+- **Optimistic State Synchronization**: Delivers immediate UI responsiveness for task actions while ensuring data integrity.
