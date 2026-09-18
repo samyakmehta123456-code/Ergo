@@ -1,21 +1,27 @@
 {
   "short_name": "Ergo",
-  "name": "Ergo - Student Task Workspace",
+  "name": "Ergo - Task Workspace",
+  "description": "Organize your tasks, projects, and deadlines in one clean workspace.",
   "icons": [
     {
       "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/dashboard",
+  "scope": "/",
   "background_color": "#F8FAFC",
-  "theme_color": "#FFFFFF",
+  "theme_color": "#1e2a4a",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities"],
+  "lang": "en"
 }
