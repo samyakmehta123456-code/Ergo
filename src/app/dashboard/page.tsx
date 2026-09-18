@@ -293,10 +293,15 @@ export default function DashboardPage() {
           tasks={tasks}
           user={user}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          selectedCalendarDate={selectedCalendarDate}
+          onSelectDate={(d) => {
+            setSelectedCalendarDate(d);
+            if (activeListId !== "today") setActiveListId("today");
+          }}
         />
 
         {/* Main Workspace Body & Calendar Grid */}
-        <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start pb-24 md:pb-6">
+        <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start pb-28 md:pb-6">
 
           {/* Main Section Area */}
           <div className="lg:col-span-8 space-y-4 sm:space-y-6">
@@ -331,8 +336,8 @@ export default function DashboardPage() {
 
         </main>
 
-        {/* Mobile Bottom Navigation Bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex items-center justify-around px-2 py-2 shadow-lg">
+        {/* Floating Mobile Bottom Navigation Bar */}
+        <div className="md:hidden fixed bottom-4 left-3 right-3 z-40 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-[0_12px_30px_rgba(0,0,0,0.15)] flex items-center justify-between p-1.5 space-x-1 select-none">
           {[
             { id: "today", label: "Today", icon: "📅" },
             { id: "scheduled", label: "Weekly", icon: "🗓" },
@@ -343,14 +348,14 @@ export default function DashboardPage() {
             <button
               key={item.id}
               onClick={() => setActiveListId(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition text-xs font-semibold gap-0.5 ${
+              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-all duration-200 text-xs font-bold gap-0.5 ${
                 activeListId === item.id
-                  ? "text-[#3559E0]"
-                  : "text-slate-400"
+                  ? "bg-[#3559E0] text-white shadow-md shadow-[#3559E0]/30 scale-105"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/80"
               }`}
             >
-              <span className="text-base leading-none">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="text-sm leading-none">{item.icon}</span>
+              <span className="text-[10px] leading-tight">{item.label}</span>
             </button>
           ))}
           <button
@@ -358,10 +363,10 @@ export default function DashboardPage() {
               setEditingTask(null);
               setIsTaskModalOpen(true);
             }}
-            className="flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition text-xs font-bold gap-0.5 text-white bg-[#3559E0]"
+            className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl transition-all duration-200 text-xs font-bold gap-0.5 text-white bg-[#3559E0] hover:bg-[#2c4ac0] shadow-md shadow-[#3559E0]/30"
           >
-            <span className="text-base leading-none">+</span>
-            <span>New</span>
+            <span className="text-sm leading-none">+</span>
+            <span className="text-[10px] leading-tight">New</span>
           </button>
         </div>
       </div>

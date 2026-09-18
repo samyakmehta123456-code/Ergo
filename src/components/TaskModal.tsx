@@ -72,6 +72,17 @@ export function TaskModal({
       return;
     }
 
+    // Restrict selecting past dates when creating a NEW task
+    if (!initialTask && dueDate) {
+      const selected = new Date(dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selected < today) {
+        setError("Cannot set due date to a past date for new tasks");
+        return;
+      }
+    }
+
     const payload = {
       title,
       description: description || null,
@@ -99,6 +110,7 @@ export function TaskModal({
   };
 
   const projectList = Array.from(new Set([...availableProjects, "General Project"]));
+  const todayStr = new Date().toISOString().split("T")[0];
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -238,6 +250,7 @@ export function TaskModal({
             <input
               type="date"
               value={dueDate}
+              min={!initialTask ? todayStr : undefined}
               onChange={(e) => setDueDate(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-[#3559E0] outline-none transition"
             />
@@ -266,4 +279,3 @@ export function TaskModal({
     </div>
   );
 }
-

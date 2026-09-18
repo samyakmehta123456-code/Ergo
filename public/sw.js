@@ -1,12 +1,15 @@
-const CACHE_NAME = 'ergo-v2';
+const CACHE_NAME = 'ergo-v3';
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
   '/login',
   '/register',
   '/manifest.json',
+  '/favicon.ico',
   '/icon-192.png',
   '/icon-512.png',
+  '/apple-touch-icon.png',
+  '/icon.svg',
 ];
 
 self.addEventListener('install', (event) => {
