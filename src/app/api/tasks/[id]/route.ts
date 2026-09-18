@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
-    const user = await getSessionUser();
+    const user = await getAuthenticatedUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,7 +27,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (body.priority !== undefined) updateData.priority = body.priority;
     if (body.category !== undefined) updateData.category = body.category;
     if (body.dueDate !== undefined) {
-      updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
+      if (body.dueDate) {
+        const d = new Date(body.dueDate);
+        updateData.dueDate = !isNaN(d.getTime()) ? d : null;
+      } else {
+        updateData.dueDate = null;
+      }
     }
 
     const updatedTask = await prisma.task.update({
@@ -44,7 +49,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
-    const user = await getSessionUser();
+    const user = await getAuthenticatedUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

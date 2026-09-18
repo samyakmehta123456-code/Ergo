@@ -1,30 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser } from "@/lib/auth";
+import { getAuthenticatedUser, ensureDbUser } from "@/lib/auth";
 import { TaskSchema } from "@/lib/validations";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const user = await getSessionUser();
+    const user = await getAuthenticatedUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let dbUser = null;
-    try {
-      dbUser = await prisma.user.findFirst({
-        where: { OR: [{ id: user.userId }, { email: user.email.toLowerCase() }] },
-      });
-    } catch (e) {
-      console.warn("DB user find notice:", e);
+    const dbUser = await ensureDbUser(user);
+    if (!dbUser) {
+      return NextResponse.json({ tasks: [] });
     }
 
-    const targetUserId = dbUser ? dbUser.id : user.userId;
-
     const tasks = await prisma.task.findMany({
-      where: { userId: targetUserId },
+      where: { userId: dbUser.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -37,9 +31,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const user = await getSessionUser();
+    const user = await getAuthenticatedUser(req);
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. Please log in to add tasks." }, { status: 401 });
+    }
+
+    const dbUser = await ensureDbUser(user);
+    if (!dbUser) {
+      return NextResponse.json({ error: "User session initialization failed." }, { status: 500 });
     }
 
     const body = await req.json();
@@ -51,37 +50,23 @@ export async function POST(req: Request) {
 
     const { title, description, status, priority, category, dueDate } = parsed.data;
 
-    // Ensure User row exists in database to satisfy foreign key constraint
-    let dbUser = await prisma.user.findFirst({
-      where: { OR: [{ id: user.userId }, { email: user.email.toLowerCase() }] },
-    });
-
-    if (!dbUser) {
-      try {
-        dbUser = await prisma.user.create({
-          data: {
-            id: user.userId,
-            name: user.name || user.email.split("@")[0],
-            email: user.email.toLowerCase(),
-            password: "default_hashed_pass",
-          },
-        });
-      } catch (e) {
-        dbUser = await prisma.user.findFirst({ where: { email: user.email.toLowerCase() } });
+    let parsedDueDate: Date | null = null;
+    if (dueDate) {
+      const d = new Date(dueDate);
+      if (!isNaN(d.getTime())) {
+        parsedDueDate = d;
       }
     }
-
-    const targetUserId = dbUser ? dbUser.id : user.userId;
 
     const task = await prisma.task.create({
       data: {
         title,
-        description,
-        status,
-        priority,
-        category,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        userId: targetUserId,
+        description: description || null,
+        status: status || "PENDING",
+        priority: priority || "MEDIUM",
+        category: category || "General Project",
+        dueDate: parsedDueDate,
+        userId: dbUser.id,
       },
     });
 

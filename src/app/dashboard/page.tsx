@@ -81,7 +81,10 @@ export default function DashboardPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(taskPayload),
         });
-        if (!res.ok) throw new Error("Update failed");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Update failed");
+        }
         toast.success("Task updated");
       } else {
         const res = await fetch("/api/tasks", {
@@ -89,7 +92,10 @@ export default function DashboardPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(taskPayload),
         });
-        if (!res.ok) throw new Error("Create failed");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Create failed");
+        }
         const data = await res.json();
         setTasks((prev) => [data.task, ...prev]);
         toast.success("New task created");
