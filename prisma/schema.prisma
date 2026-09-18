@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -21,9 +22,9 @@ model Task {
   id          String    @id @default(cuid())
   title       String
   description String?
-  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
-  priority    String    @default("MEDIUM")  // LOW, MEDIUM, HIGH, URGENT
-  category    String    @default("General") // Computer Science, Mathematics, Physics, Lab Work, Personal, etc.
+  status      String    @default("PENDING")
+  priority    String    @default("MEDIUM")
+  category    String    @default("General")
   dueDate     DateTime?
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { comparePassword, hashPassword, signJWT } from "@/lib/auth";
 import { LoginSchema } from "@/lib/validations";
-import { supabaseSignIn } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Check if Demo Login is triggered
+
+    // Demo login shortcut
     if (body.isDemoRecruiter) {
       let demoUser = await prisma.user.findUnique({
         where: { email: "demo@ergo.com" },
@@ -25,35 +26,62 @@ export async function POST(req: Request) {
         });
       }
 
-      // Ensure demo user has tasks across EVERY category field
-      const existingCount = await prisma.task.count({ where: { userId: demoUser.id } });
+      // Seed demo tasks if empty
+      const existingCount = await prisma.task.count({
+        where: { userId: demoUser.id },
+      });
       if (existingCount === 0) {
         const now = new Date();
         await prisma.task.createMany({
           data: [
-            // Camping Trip
             {
               userId: demoUser.id,
-              title: "Pack Camping Tent & Sleeping Bags",
-              description: "Check tent stakes, rainfly, and 2 zero-degree sleeping bags.",
+              title: "Submit Data Structures Assignment",
+              description: "Implement BST and AVL balancing in C++.",
+              status: "PENDING",
+              priority: "URGENT",
+              category: "Computer Science",
+              dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+            },
+            {
+              userId: demoUser.id,
+              title: "Solve Linear Algebra Problem Set",
+              description: "Complete Eigenvalues and Vector Spaces section.",
               status: "PENDING",
               priority: "HIGH",
-              category: "Camping Trip",
+              category: "Mathematics",
               dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
             },
             {
               userId: demoUser.id,
-              title: "Buy Portable Gas Stove & Firewood",
-              description: "Purchase 2 propane canisters and dry hardwood bundles.",
-              status: "PENDING",
+              title: "Write Physics Lab Report",
+              description: "Analyze oscilloscope error curves and format PDF.",
+              status: "COMPLETED",
               priority: "MEDIUM",
+              category: "Physics Lab",
+              dueDate: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+            },
+            {
+              userId: demoUser.id,
+              title: "Finalize Ergo Full Stack Assignment",
+              description: "Complete Next.js, Prisma, and Supabase features.",
+              status: "COMPLETED",
+              priority: "URGENT",
+              category: "Projects",
+              dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+            },
+            {
+              userId: demoUser.id,
+              title: "Pack Camping Gear",
+              description: "Check tent, sleeping bags, and camping stove.",
+              status: "PENDING",
+              priority: "HIGH",
               category: "Camping Trip",
               dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
             },
-            // Pet Shopping
             {
               userId: demoUser.id,
-              title: "Buy Premium Dog Food & Treats",
+              title: "Buy Dog Food and Treats",
               description: "Get 15kg grain-free kibble and chew bones.",
               status: "PENDING",
               priority: "URGENT",
@@ -62,37 +90,8 @@ export async function POST(req: Request) {
             },
             {
               userId: demoUser.id,
-              title: "Schedule Annual Vet Vaccination Checkup",
-              description: "Book appointment for rabies booster and general wellness exam.",
-              status: "PENDING",
-              priority: "HIGH",
-              category: "Pet Shopping",
-              dueDate: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
-            },
-            // Gardening
-            {
-              userId: demoUser.id,
-              title: "Water Front Lawn & Herb Garden",
-              description: "Deep water tomato beds, basil, and rosemary planter boxes.",
-              status: "PENDING",
-              priority: "MEDIUM",
-              category: "Gardening",
-              dueDate: now,
-            },
-            {
-              userId: demoUser.id,
-              title: "Prune Rose Bushes & Apply Organic Fertilizer",
-              description: "Trim dead stems and mix slow-release fertilizer.",
-              status: "COMPLETED",
-              priority: "LOW",
-              category: "Gardening",
-              dueDate: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-            },
-            // Errands
-            {
-              userId: demoUser.id,
-              title: "Pick Up Dry Cleaning Suits",
-              description: "Retrieve formal jackets and trousers before weekend event.",
+              title: "Pick Up Dry Cleaning",
+              description: "Retrieve formal jackets before weekend event.",
               status: "PENDING",
               priority: "HIGH",
               category: "Errands",
@@ -100,73 +99,23 @@ export async function POST(req: Request) {
             },
             {
               userId: demoUser.id,
-              title: "Renew Vehicle Registration Online",
-              description: "Pay state vehicle fee and print digital receipt.",
-              status: "COMPLETED",
-              priority: "MEDIUM",
-              category: "Errands",
-              dueDate: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
-            },
-            // Computer Science
-            {
-              userId: demoUser.id,
-              title: "Submit Data Structures BST Assignment",
-              description: "Implement Binary Search Trees, AVL balancing, and Graph DFS/BFS algorithm in C++.",
+              title: "Water Front Lawn and Herb Garden",
+              description: "Deep water tomato beds, basil, and rosemary.",
               status: "PENDING",
-              priority: "URGENT",
-              category: "Computer Science",
-              dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-            },
-            {
-              userId: demoUser.id,
-              title: "Review Operating Systems Semaphore Synchronization",
-              description: "Solve Producer-Consumer deadlock problems in C.",
-              status: "IN_PROGRESS",
-              priority: "HIGH",
-              category: "Computer Science",
-              dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
-            },
-            // Mathematics
-            {
-              userId: demoUser.id,
-              title: "Solve Linear Algebra Matrix Transformations",
-              description: "Complete Problem Set 5 on Eigenvalues and Vector Spaces.",
-              status: "PENDING",
-              priority: "HIGH",
-              category: "Mathematics",
-              dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
-            },
-            // Physics Lab
-            {
-              userId: demoUser.id,
-              title: "Analyze Oscilloscope Error Curves",
-              description: "Fit response curves and format PDF lab report.",
-              status: "COMPLETED",
               priority: "MEDIUM",
-              category: "Physics Lab",
-              dueDate: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+              category: "Gardening",
+              dueDate: now,
             },
-            // Projects
             {
               userId: demoUser.id,
-              title: "Finalize Ergo Full Stack Assignment",
-              description: "Complete Next.js, Prisma, and PWA mobile features.",
-              status: "COMPLETED",
-              priority: "URGENT",
-              category: "Projects",
-              dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
-            },
-            // Personal
-            {
-              userId: demoUser.id,
-              title: "Read 25 Pages of Non-Fiction Book",
+              title: "Read 25 Pages of Non-Fiction",
               description: "Daily reading goal.",
               status: "PENDING",
               priority: "LOW",
               category: "Personal",
               dueDate: now,
-            }
-          ]
+            },
+          ],
         });
       }
 
@@ -180,7 +129,6 @@ export async function POST(req: Request) {
         { message: "Demo login successful", user: { id: demoUser.id, name: demoUser.name, email: demoUser.email } },
         { status: 200 }
       );
-
       response.cookies.set("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -188,89 +136,37 @@ export async function POST(req: Request) {
         maxAge: 7 * 24 * 60 * 60,
         path: "/",
       });
-
       return response;
     }
 
+    // Regular login
     const parsed = LoginSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+      return NextResponse.json(
+        { error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
     }
 
     const { email, password } = parsed.data;
 
-    let supabaseAuthSuccess = false;
-    // Real Supabase Auth Login
-    try {
-      const { data: supaData, error: supabaseError } = await supabaseSignIn(email, password);
-      if (!supabaseError && supaData?.user) {
-        supabaseAuthSuccess = true;
-      } else if (supabaseError) {
-        console.warn("Supabase Auth notice:", supabaseError.message);
-      }
-    } catch (e) {
-      console.warn("Supabase Auth unreachable or placeholder:", e);
-    }
-
-    let user = null;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: email.toLowerCase() },
-      });
-    } catch (e) {
-      console.warn("Prisma user lookup notice:", e);
-    }
-
-    if (!user && !supabaseAuthSuccess) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
-    }
-
-    if (user) {
-      const isPasswordValid = await comparePassword(password, user.password);
-      if (!isPasswordValid && !supabaseAuthSuccess) {
-        return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
-      }
-    } else if (supabaseAuthSuccess) {
-      // Create user record in fallback memory/database if Supabase auth passed
-      const hashedPassword = await hashPassword(password);
-      try {
-        user = await prisma.user.create({
-          data: {
-            name: email.split("@")[0],
-            email: email.toLowerCase(),
-            password: hashedPassword,
-          },
-        });
-      } catch (e) {
-        user = { id: `supa_${Date.now()}`, name: email.split("@")[0], email: email.toLowerCase() };
-      }
-    }
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
     if (!user) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+      return NextResponse.json(
+        { error: "No account found with this email. Please register first." },
+        { status: 401 }
+      );
     }
 
-    // Seed default tasks for new registered users if they have 0 tasks
-    try {
-      const taskCount = await prisma.task.count({ where: { userId: user.id } });
-      if (taskCount === 0) {
-        const now = new Date();
-        await prisma.task.createMany({
-          data: [
-            {
-              userId: user.id,
-              title: "Finalize Project Presentation Slides",
-              description: "Complete architecture diagrams.",
-              status: "PENDING",
-              priority: "URGENT",
-              category: "General Project",
-              dueDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-            },
-          ]
-        });
-      }
-    } catch (e) {
-      console.warn("Task seed notice:", e);
+    const isValid = await comparePassword(password, user.password);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Incorrect password. Please try again." },
+        { status: 401 }
+      );
     }
 
     const token = await signJWT({
@@ -283,7 +179,6 @@ export async function POST(req: Request) {
       { message: "Login successful", user: { id: user.id, name: user.name, email: user.email } },
       { status: 200 }
     );
-
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -291,10 +186,12 @@ export async function POST(req: Request) {
       maxAge: 7 * 24 * 60 * 60,
       path: "/",
     });
-
     return response;
   } catch (error: any) {
-    console.error("Login Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to log in" }, { status: 500 });
+    console.error("Login error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to log in" },
+      { status: 500 }
+    );
   }
 }

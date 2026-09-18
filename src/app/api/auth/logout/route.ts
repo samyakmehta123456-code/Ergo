@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabaseSignOut } from "@/lib/supabase";
+import { getSessionUser } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function POST() {
-  try {
-    await supabaseSignOut();
-  } catch (e) {
-    console.warn("Supabase Auth logout notice:", e);
-  }
-
   const response = NextResponse.json({ message: "Logged out successfully" }, { status: 200 });
   response.cookies.set("token", "", {
     httpOnly: true,
