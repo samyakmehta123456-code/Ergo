@@ -1,7 +1,5 @@
 # Ergo — Student Task Management Application
 
-> **Lunorsoft Internship Recruitment Round 1 — Full Stack Developer Assignment**
-
 Ergo is a modern, full-stack student task and project management application built with **Next.js 14 (App Router)**, **TypeScript**, **Tailwind CSS**, **Prisma ORM**, and **Supabase (PostgreSQL)**. It is designed to help students organize academic coursework, project deliverables, personal tasks, and deadlines through a responsive dashboard.
 
 ---
@@ -25,9 +23,9 @@ Ergo is a modern, full-stack student task and project management application bui
 
 ---
 
-## Features & Assignment Coverage
+## Key Features
 
-### Core Assignment Requirements
+### Core Functionality
 - [x] **Create Tasks**: Add tasks with title, description, priority, category, and due date.
 - [x] **Edit Tasks**: Update existing task details dynamically through interactive modals.
 - [x] **Delete Tasks**: Remove tasks safely with instant database cascade updates.
@@ -37,7 +35,7 @@ Ergo is a modern, full-stack student task and project management application bui
 - [x] **Database Persistence**: Fully backed by Supabase PostgreSQL in production via Prisma ORM.
 - [x] **Clean & Responsive UI**: Responsive sidebar, mobile bottom navigation, and card grids.
 
-### Bonus Features Implemented
+### Advanced Features
 - [x] **User Authentication**: Secure user registration, login, and session persistence.
 - [x] **Live Global Search**: Instant keyword search across task titles, descriptions, and categories.
 - [x] **Task Priority & Due Dates**: Priority levels (Low, Medium, High, Urgent) and calendar date picking.
@@ -52,7 +50,7 @@ Ergo is a modern, full-stack student task and project management application bui
 
 - **Supabase Cloud Database Setup**: Configured Supabase PostgreSQL database project instance, established direct and pooled connection strings, and configured environment variables (`DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 - **Prisma Relational Database Architecture**: Designed relational schemas (`User` and `Task` models), configured database indexes, defined field constraints (`onDelete: Cascade`), and executed migrations (`npx prisma db push`).
-- **Vercel Deployment & Configuration**: Connected GitHub repository to **Vercel**, configured build scripts (`prisma generate && prisma db push --accept-data-loss && next build`), injected secure production environment variables, verified domain resolution, and tested live production endpoints.
+- **Vercel Deployment & Configuration**: Connected GitHub repository to **Vercel**, configured build scripts (`prisma generate && next build`), injected secure production environment variables, verified domain resolution, and tested live production endpoints.
 - **Custom Authentication & Cookie Security**: Engineered session management using `jose` JWTs in HTTP-Only, `SameSite=Lax` cookies, integrated middleware route protection, and bridged Supabase Auth state.
 - **Optimistic State Management & Logic**: Wrote state synchronization logic in React components to ensure instant UI feedback during task creation, deletion, and completion toggles.
 - **Testing & Quality Assurance**: Verified all application links, authentication flows, and data persistence in incognito browser sessions prior to final submission.
@@ -115,19 +113,17 @@ To deploy to Vercel:
 1. Push your repository to **GitHub**.
 2. Connect your repository on **Vercel**.
 3. In **Vercel Project Settings -> Environment Variables**, add:
-   - `DATABASE_URL`: Your Supabase PostgreSQL Connection String (Transaction Pooler or Direct Connection URI).
-   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Key.
+   - `DATABASE_URL`: Your Supabase PostgreSQL Connection String.
    - `JWT_SECRET`: A secure random secret key.
 4. Set the Build Command in Vercel to:
    ```bash
-   prisma generate && prisma db push --accept-data-loss && next build
+   prisma generate && next build
    ```
 5. Deploy. Vercel will automatically build the Next.js app and connect to Supabase.
 
 ---
 
-## Round 2 Defense Preparation
+## Key Technical Decisions
 
 - **Why HTTP-Only Cookies for Auth?**: Prevents XSS attacks by withholding token access from client-side JavaScript, ensuring tokens are automatically passed securely via HTTP headers.
 - **Why Prisma + Supabase?**: Combines the type-safety and auto-generated migrations of Prisma ORM with the scalability and PostgreSQL hosting of Supabase.
