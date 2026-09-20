@@ -47,12 +47,11 @@ export function SectionColumns({
   return (
     <div className="space-y-6">
       
-      {/* Progress Hero Card for Every List & View (Matching Reference Image Top Hero Card) */}
+      {/* Progress Hero Card for Every List & View */}
       <ProgressHeroCard
         title={title}
         totalTasks={totalTasks}
         completedTasks={completedTasks}
-        onOpenCreate={onOpenCreate}
       />
 
       {/* Taskly Filter Pills Bar */}
@@ -110,13 +109,6 @@ export function SectionColumns({
           <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200 shadow-[0_4px_20px_rgba(53,89,224,0.05)]">
             <Inbox className="w-8 h-8 text-slate-300 mx-auto mb-2" />
             <h3 className="text-sm font-bold text-slate-800">No tasks match this filter</h3>
-            <p className="text-xs text-slate-500 mt-1 mb-4">Click Add Task to create a new item.</p>
-            <button
-              onClick={onOpenCreate}
-              className="bg-[#3559E0] hover:bg-[#2c4ac0] text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-md shadow-[#3559E0]/20"
-            >
-              + Create New Task
-            </button>
           </div>
         ) : (
           displayTasks.map((task) => (

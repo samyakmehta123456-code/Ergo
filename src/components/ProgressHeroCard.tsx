@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Plus } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 interface ProgressHeroCardProps {
@@ -8,7 +8,6 @@ interface ProgressHeroCardProps {
   totalTasks: number;
   completedTasks: number;
   targetDate?: string;
-  onOpenCreate: () => void;
 }
 
 export function ProgressHeroCard({
@@ -16,7 +15,6 @@ export function ProgressHeroCard({
   totalTasks,
   completedTasks,
   targetDate,
-  onOpenCreate,
 }: ProgressHeroCardProps) {
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
@@ -29,22 +27,12 @@ export function ProgressHeroCard({
       {/* Background ambient lighting element */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-white/15 rounded-full blur-2xl pointer-events-none -mr-12 -mt-12" />
 
-      {/* Top Row: Title & Add Button */}
-      <div className="flex items-start justify-between relative z-10">
-        <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-white">{title}</h2>
-          <p className="text-xs text-white/80 mt-1">
-            You have <span className="text-[#F4C447] font-extrabold">{totalTasks - completedTasks}</span> open items
-          </p>
-        </div>
-
-        <button
-          onClick={onOpenCreate}
-          className="bg-white hover:bg-slate-100 text-[#3559E0] font-black px-3.5 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 transition shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Task</span>
-        </button>
+      {/* Top Row: Title only */}
+      <div className="relative z-10">
+        <h2 className="text-2xl font-extrabold tracking-tight text-white">{title}</h2>
+        <p className="text-xs text-white/80 mt-1">
+          You have <span className="text-[#F4C447] font-extrabold">{totalTasks - completedTasks}</span> open items
+        </p>
       </div>
 
       {/* Progress Bar Container */}
