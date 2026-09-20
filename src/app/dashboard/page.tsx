@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [customProjects, setCustomProjects] = useState<string[]>([]);
   const [isHeaderCalendarOpen, setIsHeaderCalendarOpen] = useState<boolean>(false);
+  const [isMobileProjectsOpen, setIsMobileProjectsOpen] = useState<boolean>(false);
 
   // Task Modal
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -199,6 +200,11 @@ export default function DashboardPage() {
       if (activeListId === "completed") {
         return t.status === "COMPLETED";
       }
+      if (activeListId === "overdue") {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return t.status !== "COMPLETED" && t.dueDate && new Date(t.dueDate) < today;
+      }
       if (activeListId === "all") {
         return true;
       }
@@ -238,6 +244,8 @@ export default function DashboardPage() {
         return "Flagged Tasks";
       case "completed":
         return "Completed Tasks";
+      case "overdue":
+        return "Overdue Tasks";
       case "all":
         return "All Vault Tasks";
       default:
@@ -268,7 +276,10 @@ export default function DashboardPage() {
       <div className="hidden md:block">
         <Sidebar
           activeListId={activeListId}
-          setActiveListId={setActiveListId}
+          setActiveListId={(id) => {
+            setActiveListId(id);
+            setIsMobileProjectsOpen(false);
+          }}
           tasks={tasks}
           user={user}
           onLogout={handleLogout}
@@ -297,6 +308,7 @@ export default function DashboardPage() {
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onToggleCalendar={() => setIsHeaderCalendarOpen(!isHeaderCalendarOpen)}
           isCalendarOpen={isHeaderCalendarOpen}
+          onOpenMobileProjects={() => setIsMobileProjectsOpen(!isMobileProjectsOpen)}
         />
 
         {/* Main Workspace Body & Calendar Grid */}
@@ -314,26 +326,76 @@ export default function DashboardPage() {
                   onSelectDate={(d) => {
                     setSelectedCalendarDate(d);
                     if (activeListId !== "today") setActiveListId("today");
+                    setIsHeaderCalendarOpen(false);
                   }}
                 />
               </div>
             )}
 
-            <SectionColumns
-              title={listTitle}
-              tasks={filteredTasks}
-              onToggleStatus={handleToggleStatus}
-              onToggleFlag={handleToggleFlag}
-              onEdit={(t) => {
-                setEditingTask(t);
-                setIsTaskModalOpen(true);
-              }}
-              onDelete={handleDeleteTask}
-              onOpenCreate={() => {
-                setEditingTask(null);
-                setIsTaskModalOpen(true);
-              }}
-            />
+            {/* Mobile Projects List View OR Standard Task Column View */}
+            {isMobileProjectsOpen ? (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div>
+                    <h2 className="text-lg font-extrabold text-slate-900">Project Folders</h2>
+                    <p className="text-xs text-slate-500 font-medium">Select a project to view assigned tasks</p>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileProjectsOpen(false)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                  >
+                    Back to Workspace
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {allAvailableProjects.map((projectName) => {
+                    const projectTaskCount = tasks.filter(
+                      (t) => t.category.toLowerCase() === projectName.toLowerCase()
+                    ).length;
+                    return (
+                      <button
+                        key={projectName}
+                        onClick={() => {
+                          setActiveListId(`cat-${projectName}`);
+                          setIsMobileProjectsOpen(false);
+                        }}
+                        className="bg-white hover:bg-slate-50 p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between transition group text-left"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#3559E0]/10 text-[#3559E0] flex items-center justify-center font-bold text-sm">
+                            {projectName.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#3559E0] transition">
+                              {projectName}
+                            </h3>
+                            <p className="text-xs text-slate-500">{projectTaskCount} items</p>
+                          </div>
+                        </div>
+                        <span className="text-slate-400 group-hover:text-[#3559E0] text-sm font-bold">→</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <SectionColumns
+                title={listTitle}
+                tasks={filteredTasks}
+                onToggleStatus={handleToggleStatus}
+                onToggleFlag={handleToggleFlag}
+                onEdit={(t) => {
+                  setEditingTask(t);
+                  setIsTaskModalOpen(true);
+                }}
+                onDelete={handleDeleteTask}
+                onOpenCreate={() => {
+                  setEditingTask(null);
+                  setIsTaskModalOpen(true);
+                }}
+              />
+            )}
           </div>
 
           {/* Right Panel Calendar — hidden on mobile */}
@@ -350,7 +412,7 @@ export default function DashboardPage() {
 
         </main>
 
-        {/* Floating Mobile Bottom Navigation Bar without emojis except + New */}
+        {/* Floating Mobile Bottom Navigation Bar with Overdue Tab */}
         <div className="md:hidden fixed bottom-4 left-3 right-3 z-40 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-[0_12px_30px_rgba(0,0,0,0.15)] flex items-center justify-between p-1.5 space-x-1 select-none">
           {[
             { id: "today", label: "Today" },
@@ -358,12 +420,16 @@ export default function DashboardPage() {
             { id: "all", label: "All" },
             { id: "flagged", label: "Flagged" },
             { id: "completed", label: "Done" },
+            { id: "overdue", label: "Overdue" },
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveListId(item.id)}
+              onClick={() => {
+                setIsMobileProjectsOpen(false);
+                setActiveListId(item.id);
+              }}
               className={`flex-1 py-2 px-1 rounded-xl transition-all duration-200 text-xs font-bold text-center ${
-                activeListId === item.id
+                activeListId === item.id && !isMobileProjectsOpen
                   ? "bg-[#3559E0] text-white shadow-md shadow-[#3559E0]/30 scale-105"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
               }`}
@@ -371,16 +437,6 @@ export default function DashboardPage() {
               <span>{item.label}</span>
             </button>
           ))}
-          <button
-            onClick={() => {
-              setEditingTask(null);
-              setIsTaskModalOpen(true);
-            }}
-            className="flex-1 py-2 px-1 rounded-xl transition-all duration-200 text-xs font-bold text-center text-white bg-[#3559E0] hover:bg-[#2c4ac0] shadow-md shadow-[#3559E0]/30 flex items-center justify-center space-x-1"
-          >
-            <span className="text-sm font-black">+</span>
-            <span>New</span>
-          </button>
         </div>
       </div>
 

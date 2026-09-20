@@ -21,6 +21,7 @@ model Task {
   id          String    @id @default(cuid())
   title       String
   description String?
+  reason      String?
   status      String    @default("PENDING")
   priority    String    @default("MEDIUM")
   category    String    @default("General")

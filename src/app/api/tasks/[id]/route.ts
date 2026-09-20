@@ -23,6 +23,7 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.description !== undefined) updateData.description = body.description;
+    if (body.reason !== undefined) updateData.reason = body.reason;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.priority !== undefined) updateData.priority = body.priority;
     if (body.category !== undefined) updateData.category = body.category;
