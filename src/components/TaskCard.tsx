@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Circle, Edit2, Trash2, Flag } from "lucide-react";
+import { CheckCircle2, Circle, Edit2, Trash2, Flag, AlertTriangle } from "lucide-react";
 import { formatDate, getDueDateStatus } from "@/lib/utils";
 
 interface TaskCardProps {
@@ -9,6 +9,7 @@ interface TaskCardProps {
     id: string;
     title: string;
     description?: string | null;
+    reason?: string | null;
     status: string;
     priority: string;
     category: string;
@@ -23,9 +24,16 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onToggleStatus, onToggleFlag, onEdit, onDelete }: TaskCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [reasonText, setReasonText] = useState(task.reason || "");
+  const [isEditingReason, setIsEditingReason] = useState(false);
+  const [savingReason, setSavingReason] = useState(false);
+
   const isCompleted = task.status === "COMPLETED";
   const isFlagged = task.priority === "HIGH" || task.priority === "URGENT";
   const dueStatus = getDueDateStatus(task.dueDate, isCompleted);
+  
+  // Only overdue tasks show the delay reason block
+  const isOverdue = dueStatus.label === "Overdue" || (task.dueDate && new Date(task.dueDate) < new Date() && !isCompleted);
 
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this task?")) {
@@ -34,11 +42,33 @@ export function TaskCard({ task, onToggleStatus, onToggleFlag, onEdit, onDelete 
     }
   };
 
+  const handleSaveReasonSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingReason(true);
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: reasonText }),
+      });
+      if (res.ok) {
+        setIsEditingReason(false);
+        task.reason = reasonText;
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSavingReason(false);
+    }
+  };
+
   return (
     <div
       className={`rounded-3xl p-5 border transition-all duration-200 relative overflow-hidden backdrop-blur-md ${
         isCompleted
           ? "bg-gradient-to-br from-[#5BB876]/10 via-white to-emerald-50/30 border-[#5BB876]/40 shadow-[0_8px_25px_rgba(91,184,118,0.12)] hover:shadow-[0_12px_30px_rgba(91,184,118,0.2)] hover:scale-[1.008]"
+          : isOverdue
+          ? "bg-gradient-to-br from-amber-500/5 via-white to-amber-50/30 border-amber-300 shadow-[0_8px_25px_rgba(245,158,11,0.12)] hover:scale-[1.008]"
           : "bg-gradient-to-br from-[#E84E4E]/5 via-white to-rose-50/30 border-[#E84E4E]/30 shadow-[0_8px_25px_rgba(232,78,78,0.1)] hover:shadow-[0_12px_30px_rgba(232,78,78,0.18)] hover:scale-[1.008]"
       }`}
     >
@@ -81,6 +111,61 @@ export function TaskCard({ task, onToggleStatus, onToggleFlag, onEdit, onDelete 
           <p className={`text-xs text-slate-600 font-normal leading-relaxed ${isCompleted ? "line-through opacity-70" : ""}`}>
             {task.description}
           </p>
+        </div>
+      )}
+
+      {/* Overdue Delay Reason Block — ONLY SHOWN IF TASK IS OVERDUE */}
+      {isOverdue && (
+        <div className="mt-3 bg-amber-50/90 backdrop-blur-md p-3 rounded-2xl border border-amber-200/80 shadow-xs relative z-10 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-900 flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>Delay Reason:</span>
+            </span>
+            <button
+              onClick={() => setIsEditingReason(!isEditingReason)}
+              className="text-[10px] font-bold text-[#3559E0] hover:underline bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200"
+            >
+              {reasonText ? "Edit Reason" : "+ Add Reason"}
+            </button>
+          </div>
+
+          {isEditingReason ? (
+            <form onSubmit={handleSaveReasonSubmit} className="space-y-2 pt-1">
+              <textarea
+                rows={2}
+                autoFocus
+                placeholder="Explain why this task was not completed on the assigned day..."
+                value={reasonText}
+                onChange={(e) => setReasonText(e.target.value)}
+                className="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-xl text-xs text-slate-900 font-medium focus:ring-2 focus:ring-[#3559E0] outline-none"
+              />
+              <div className="flex items-center justify-end space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingReason(false)}
+                  className="px-2 py-0.5 text-[11px] font-semibold text-slate-500 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingReason}
+                  className="px-3 py-1 text-[11px] font-bold bg-[#3559E0] text-white rounded-lg hover:bg-[#2c4ac0] transition shadow-xs"
+                >
+                  {savingReason ? "Saving..." : "Save Reason"}
+                </button>
+              </div>
+            </form>
+          ) : reasonText ? (
+            <p className="text-xs text-amber-950 font-medium italic leading-relaxed">
+              "{reasonText}"
+            </p>
+          ) : (
+            <p className="text-[11px] text-amber-700/80 font-normal italic">
+              No delay reason provided yet. Click "+ Add Reason" to explain the delay.
+            </p>
+          )}
         </div>
       )}
 
