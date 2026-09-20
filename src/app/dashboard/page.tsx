@@ -200,6 +200,14 @@ export default function DashboardPage() {
       if (activeListId === "completed") {
         return t.status === "COMPLETED";
       }
+      if (activeListId === "overdue") {
+        if (!t.dueDate || t.status === "COMPLETED") return false;
+        const due = new Date(t.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        // Strictly BEFORE today — not today, not future
+        return due < today;
+      }
       if (activeListId === "all") {
         return true;
       }
@@ -239,10 +247,14 @@ export default function DashboardPage() {
         return "Flagged Tasks";
       case "completed":
         return "Completed Tasks";
+      case "overdue":
+        return "Overdue Tasks";
       case "all":
         return "All Vault Tasks";
       default:
-        return activeListId.replace("cat-", "") + " Project";
+        return activeListId.startsWith("cat-")
+          ? activeListId.replace("cat-", "")
+          : activeListId;
     }
   }, [activeListId, selectedCalendarDate, searchQuery]);
 

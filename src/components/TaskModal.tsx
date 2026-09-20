@@ -113,11 +113,8 @@ export function TaskModal({
   const todayStr = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-[0_20px_50px_rgba(53,89,224,0.18)] border border-slate-200/80 relative overflow-hidden text-slate-900">
-        
-        {/* Top Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#3559E0] via-[#6A99D4] to-[#5BB876]" />
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/60 relative overflow-hidden text-slate-900">
 
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-5">
