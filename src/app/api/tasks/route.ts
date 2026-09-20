@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { title, description, status, priority, category, dueDate } = parsed.data;
+    const { title, description, reason, status, priority, category, dueDate } = parsed.data;
 
     // Ensure the user row exists in Postgres — upsert by email
     const dbUser = await prisma.user.upsert({
@@ -70,6 +70,7 @@ export async function POST(req: Request) {
       data: {
         title,
         description: description ?? null,
+        reason: reason ?? null,
         status: status ?? "PENDING",
         priority: priority ?? "MEDIUM",
         category: category ?? "General Project",

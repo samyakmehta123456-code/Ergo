@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus, Download, PanelLeft, X, Calendar, FolderKanban } from "lucide-react";
+import { Search, Plus, Download, PanelLeft, X, Calendar } from "lucide-react";
 import Link from "next/link";
 import { exportTasksToCSV } from "@/lib/utils";
 
@@ -15,7 +15,6 @@ interface HeaderProps {
   onDemoLogin?: () => void;
   onToggleCalendar?: () => void;
   isCalendarOpen?: boolean;
-  onOpenMobileProjects?: () => void;
 }
 
 export function Header({
@@ -28,7 +27,6 @@ export function Header({
   onDemoLogin,
   onToggleCalendar,
   isCalendarOpen,
-  onOpenMobileProjects,
 }: HeaderProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
@@ -84,19 +82,8 @@ export function Header({
         </div>
       )}
 
-      {/* Right: Projects (Mobile), Search & User Profile */}
+      {/* Right: Search & User */}
       <div className="flex items-center space-x-1.5 sm:space-x-2">
-        {/* Mobile Projects Icon Button (sm:hidden) */}
-        {onOpenMobileProjects && (
-          <button
-            onClick={onOpenMobileProjects}
-            className="sm:hidden p-1.5 bg-slate-100 hover:bg-slate-200 text-[#3559E0] rounded-xl text-xs transition border border-slate-200 flex items-center justify-center"
-            title="Projects"
-          >
-            <FolderKanban className="w-4 h-4" />
-          </button>
-        )}
-
         {/* Desktop Search Bar (sm and up) */}
         <div className="hidden sm:relative sm:block w-40 sm:w-48">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

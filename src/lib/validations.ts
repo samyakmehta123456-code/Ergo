@@ -14,6 +14,7 @@ export const LoginSchema = z.object({
 export const TaskSchema = z.object({
   title: z.string().min(1, "Title is required").max(120, "Title is too long"),
   description: z.string().optional().nullable(),
+  reason: z.string().optional().nullable(),
   status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED"]).default("PENDING"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
   category: z.string().min(1, "Category is required").default("General"),
