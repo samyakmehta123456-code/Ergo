@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus, Download, PanelLeft, X, Calendar } from "lucide-react";
+import { Search, Plus, Download, PanelLeft, X, Calendar, FolderKanban } from "lucide-react";
 import Link from "next/link";
 import { exportTasksToCSV } from "@/lib/utils";
 
@@ -15,6 +15,8 @@ interface HeaderProps {
   onDemoLogin?: () => void;
   onToggleCalendar?: () => void;
   isCalendarOpen?: boolean;
+  onOpenMobileProjects?: () => void;
+  isMobileProjectsOpen?: boolean;
 }
 
 export function Header({
@@ -27,13 +29,15 @@ export function Header({
   onDemoLogin,
   onToggleCalendar,
   isCalendarOpen,
+  onOpenMobileProjects,
+  isMobileProjectsOpen,
 }: HeaderProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   return (
     <header className="h-14 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 select-none">
       
-      {/* Left: Sidebar Collapse Toggle (Desktop only) + New Task + CSV Export + Calendar Icon */}
+      {/* Left: Sidebar Collapse Toggle (Desktop only) + New Task + CSV Export + Calendar Icon + Mobile Projects Icon */}
       <div className="flex items-center space-x-1.5 sm:space-x-2">
         {/* Sidebar Toggle - HIDDEN on mobile, visible on md+ */}
         <button
@@ -61,7 +65,7 @@ export function Header({
           <Download className="w-4 h-4" />
         </button>
 
-        {/* Calendar Toggle Button right beside Download Icon */}
+        {/* Calendar Toggle Button */}
         <button
           onClick={onToggleCalendar}
           title="Toggle Calendar View"
@@ -73,6 +77,21 @@ export function Header({
         >
           <Calendar className="w-4 h-4" />
         </button>
+
+        {/* Mobile Projects Folder Icon Button (sm:hidden) */}
+        {onOpenMobileProjects && (
+          <button
+            onClick={onOpenMobileProjects}
+            title="Toggle Projects View"
+            className={`sm:hidden p-1.5 rounded-xl text-xs transition border flex items-center justify-center ${
+              isMobileProjectsOpen
+                ? "bg-[#3559E0] text-white border-[#3559E0] shadow-sm"
+                : "bg-slate-100 hover:bg-slate-200 text-[#3559E0] border-slate-200"
+            }`}
+          >
+            <FolderKanban className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* CENTER: PURE TITLE 'Ergo' ONLY - PERFECTLY CENTERED */}
